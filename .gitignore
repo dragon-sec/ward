@@ -1,0 +1,31 @@
+# Build output.
+/target
+
+# Private keys and local environment. Nothing in this repository should ever
+# want either, and the `no-committed-keys` push ruleset refuses most of them at
+# the ref — this is the copy that stops them reaching a commit at all.
+*.pem
+*.key
+.env
+
+# DragonGuard's intelligence cache. Only the cache: the per-branch baseline
+# snapshots beside it are tracked on purpose, because the regression gate
+# compares a branch against the default branch's snapshot, and a snapshot
+# nothing can read is a gate that always reports "nothing recorded".
+.dragon/cache
+
+# Local assistant tooling: a project profile describing this repository's
+# security posture and trust boundaries, plus review and design reports. Useful
+# working notes, and this repository is public.
+.dragon-buddy/
+session.txt
+
+# Editors and OS noise.
+.idea/
+.vscode/
+.DS_Store
+
+# rustfmt backups and coverage output.
+**/*.rs.bk
+*.profraw
+/coverage/

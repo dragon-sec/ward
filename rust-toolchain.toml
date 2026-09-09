@@ -1,0 +1,5 @@
+# Pinned so the merge gate tests the toolchain contributors actually run.
+# Renovate bumps this; treat a bump like any other dependency update.
+[toolchain]
+channel = "1.96.1"
+components = ["rustfmt", "clippy"]

@@ -1,0 +1,20 @@
+[workspace]
+resolver = "3"
+members = ["crates/ward"]
+
+[workspace.package]
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.96"
+license = "Apache-2.0"
+repository = "https://github.com/dragon-sec/ward"
+
+[workspace.lints.rust]
+# `deny`, not `forbid`: confining a process needs syscalls that are unsafe by
+# definition, and forbid cannot be overridden at the point where that is true.
+# Every exception should be an explicit, reviewed `#[allow]` with a reason.
+unsafe_code = "deny"
+missing_docs = "warn"
+
+[workspace.lints.clippy]
+pedantic = { level = "warn", priority = -1 }

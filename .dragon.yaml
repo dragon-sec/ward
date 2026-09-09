@@ -1,0 +1,87 @@
+version: dragonguard/v1
+project: ward
+
+# Asset context. This is what separates "CVSS 9.8" from "fix this today":
+# the same vulnerability is not the same problem in a payments API and in a
+# tool that has not shipped a release yet.
+asset:
+  name: ward
+
+  # Honest for today: nothing is released and nothing runs anywhere. Flip this
+  # to production at the first tagged release rather than in advance — it arms
+  # no_kev_in_production in the baseline, and a mandatory gate that cannot fire
+  # is a gate nobody notices has been off.
+  environment: development     # production | staging | development | test
+
+  # High regardless of the above, because criticality is blast radius, not
+  # deployment status. Ward's entire job is to confine somebody else's language
+  # server, and it runs on developer workstations holding source, SSH keys and
+  # cloud credentials. A failure here does not leak ward's data — it hands a
+  # third party's binary the developer's machine, unconfined, which is the
+  # exact outcome the project exists to prevent.
+  criticality: high            # critical | high | medium | low
+
+  # No listener, no inbound path. Ward is started by an editor and speaks LSP
+  # over stdio to a child process. The hostile input is a workspace someone
+  # opens, which is a different threat and is what the profiles are for.
+  internet_exposed: false
+
+  handles_pii: false
+  handles_payments: false
+  tags: [lsp, sandbox, developer-tooling]
+
+engines:
+  trivy:
+    enabled: true
+
+  opengrep:
+    enabled: true
+    # The builtin pack ships rules for Go, JavaScript and Python — there are no
+    # Rust rules in it today, so on this repository opengrep is covering the
+    # workflows, YAML and shell rather than the crate. Kept enabled anyway
+    # because that surface is real, and because a disabled engine is invisible
+    # while an enabled one with thin coverage shows up in `dragon engines`.
+    # Rust coverage means writing rules under ./rules; that is a follow-up.
+    rules:
+      - builtin
+      - p/security-audit
+
+  gitleaks:
+    enabled: true
+
+  osv:
+    enabled: true
+    # No `rules:` here on purpose. For osv that field selects languages for
+    # *call analysis*, and the supported set is Go and JavaScript — naming
+    # `rust` would be a value the engine does not know rather than a feature
+    # switch. Dependency scanning itself is unaffected.
+
+  supplychain:
+    enabled: true
+
+# Cargo already records which dependencies are dev- or build-only, so there is
+# no `ships:` block: that field exists because Go alone cannot tell a
+# code-generation tool from a driver the binary opens at startup.
+
+# The recommended pack, verbatim from DragonSecurity/dragonguard — the rules
+# that mean the same thing at every organization. Ward-specific rules, when
+# there are any, belong in a second file beside it rather than as edits to this
+# one: a modified copy of an upstream pack silently stops tracking upstream.
+policies:
+  - policies
+
+baseline: .dragon-baseline.yaml
+default_branch: main
+
+# `target` is build output, `.git` is not source. Nothing else is excluded —
+# an exclusion is a decision to stop looking somewhere, and this tree is small
+# enough that there is nowhere worth not looking.
+ignore:
+  - target
+  - .git
+
+# Per-branch scorecard snapshots. Commit these; the regression gate compares a
+# branch against the default branch's snapshot, and a snapshot nothing can read
+# is a gate that always reports "nothing recorded". The cache beside them is
+# gitignored.
+state_dir: .dragon
