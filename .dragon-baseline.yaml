@@ -1,0 +1,49 @@
+apiVersion: dragonguard/v1
+kind: Baseline
+metadata:
+  name: default
+  description: Acceptable security posture for ward.
+
+# Hard gates: never acceptable, at any score.
+#
+# no_kev_in_production is inert while asset.environment is `development`. It
+# stays listed so that flipping the environment at the first release arms it,
+# rather than requiring somebody to remember this file exists.
+mandatory:
+  - no_active_secrets
+  - no_kev_in_production
+  - no_reachable_critical_vulnerability
+
+# Zero on both, which is a stricter setting than a working codebase can usually
+# adopt — and the reason to take it now is that ward currently has no
+# dependencies at all. The allowance in a baseline exists to let a legacy tree
+# pass on day one and improve from there; there is no legacy here to carry, so
+# the first new high-severity finding should stop the merge and be argued about
+# on its merits. Raising these later is a deliberate decision with a diff.
+critical:
+  maximum_new: 0
+high:
+  maximum_new: 0
+
+# The regression ratchet, kept loose while the absolute gates above are tight.
+# Score moves for reasons that are not this pull request's doing — an advisory
+# published upstream overnight will do it — and a ratchet at zero turns that
+# into a red gate on an unrelated change. The severity counts are what should
+# catch a real regression.
+maximum_score_regression: 5
+
+# Score floors, deliberately unset. A floor guessed before the first scan is a
+# floor somebody disables in a week; run `dragon scan` a few times, see where
+# this project actually sits, then set one just below it.
+#
+# minimum_score: 80
+
+block_on_policy_deny: true
+
+# Refuse to pass when engines were unavailable or intelligence could not be
+# fetched. A gate that passes because it could not look is not a gate.
+allow_degraded: false
+
+# Not a team being introduced to the gate — this repository has had one since
+# its first commit.
+warn_only: false
