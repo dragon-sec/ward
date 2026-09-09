@@ -1,0 +1,18 @@
+[package]
+name = "ward"
+description = "Run a language server under a capability profile."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+# The crates.io name is not ours yet, and crates.io has no reservation
+# mechanism — a name is permanent from the first publish. Nothing is published
+# until there is something worth publishing.
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]

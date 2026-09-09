@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # The job id IS the status context, and the require-checks-on-default-branch
+  # ruleset requires a context named exactly `gate`. Do not add a `name:` here
+  # and do not rename the job — either one renames the check and the ruleset
+  # then waits forever for a context that no longer exists.
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Our own action, in a repository whose default branch is protected, so
+      # it tracks `main` rather than a pin. Third-party actions are pinned by
+      # SHA — see the org CONTRIBUTING.md.
+      - uses: dragon-sec/.github/.github/actions/rust-gate@main
